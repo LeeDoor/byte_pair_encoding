@@ -7,9 +7,10 @@
 int main() {
     setlocale(LC_ALL, "C.UTF-8");
     srand(time(NULL));
-    int res = generate_example("example.txt", 50);
-    if(res) return res;
-    FILE* source = fopen("example.txt", "r");
+    int res;
+    // res = generate_example("example.txt", 50);
+    // if(res) return res;
+    FILE* source = fopen("big.txt", "r");
     FILE* destination = fopen("destination.txt", "w");
     if(source == NULL || destination == NULL) {
         printf("Failed to open source or destination.\n");

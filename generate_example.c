@@ -19,9 +19,9 @@ int generate_example(const char *filename,
     for(size_t chid = 0; chid < char_amount / (size_t)CHUNK_SIZE + (char_amount % CHUNK_SIZE != 0); ++chid) {
         size_t actual_chunk_size = MIN(char_amount - chid * CHUNK_SIZE, CHUNK_SIZE);
         for(size_t ch = 0; ch < actual_chunk_size; ++ch) {
-            if(ch > 0 && rand() % 5 == 0) {
+            if(ch > 0 && rand() % 10 == 0) {
                 // same letter
-                chunk[ch] = chunk[ch - 1];
+                chunk[ch] = ' ';
             } else {
                 chunk[ch] = rand() % 2 ? 'A' : 'a'; // is capital
                 chunk[ch] += rand() % 2; // which letter
