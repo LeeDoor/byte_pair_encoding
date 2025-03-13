@@ -8,7 +8,7 @@
 #define MAX(a, b) a > b ? a : b
 #define MIN(a, b) a > b ? b : a
 int generate_example(const char *filename, 
-                     char_amount_t char_amount) {
+                     size_t char_amount) {
     FILE* fstream = fopen(filename, "w");
     if(fstream == NULL) {
         printf("Failed on creating file named: %s.\n", filename);
@@ -16,7 +16,7 @@ int generate_example(const char *filename,
     }
     
     char chunk[CHUNK_SIZE + 1];
-    for(char_amount_t chid = 0; chid < char_amount / (char_amount_t)CHUNK_SIZE + (char_amount % CHUNK_SIZE != 0); ++chid) {
+    for(size_t chid = 0; chid < char_amount / (size_t)CHUNK_SIZE + (char_amount % CHUNK_SIZE != 0); ++chid) {
         size_t actual_chunk_size = MIN(char_amount - chid * CHUNK_SIZE, CHUNK_SIZE);
         for(size_t ch = 0; ch < actual_chunk_size; ++ch) {
             chunk[ch] = rand() % 2 ? 'A' : 'a'; // is capital
