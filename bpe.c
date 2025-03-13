@@ -29,11 +29,16 @@ int read_file_chunk(FILE* from, wchar_t** buffer){
 // pair - pointer to an array to assign the most frequent pair
 // returns the frequency of returned pair. 0 if no pair occurences.
 size_t most_frequent_pair(const wchar_t* str, size_t str_size, wchar_t (*pair)[2]) {
-    str = str;
-    str_size = str_size;
-    (*pair)[0]  = 'a';
-    (*pair)[1]  = 'b';
-    return 0; 
+    size_t freq_table[256][256];
+    size_t mfreq = 0; // max freq
+    for(size_t i = 0; i < str_size - 1; ++i) {
+        if(++freq_table[str[i]][str[i + 1]] > mfreq) {
+            mfreq = freq_table[str[i]][str[i + 1]];
+            (*pair)[0] = str[i];
+            (*pair)[1] = str[i + 1];
+        }
+    }
+    return mfreq; 
 }
 
 // copies string from from_buffer to to_buffer.
