@@ -131,7 +131,7 @@ int write_chunk_to_file(FILE* dest, wchar_t* buffer) {
 free(buffer); \
 return code
 
-int bpe(FILE* source, FILE* dest) {
+int bpe_encode(FILE* source, FILE* dest) {
     wchar_t* buffer;
     int res = read_file_chunk(source, &buffer);
     if(res < 0) return -1;

@@ -22,7 +22,7 @@ int main(int argc, char** argv) {
         printf("Failed to open source or destination.\n");
         return -1;
     }
-    res = bpe(source, destination);
+    res = bpe_encode(source, destination);
     fclose(source);
     fclose(destination);
     return res;
