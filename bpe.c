@@ -16,7 +16,7 @@ int read_file_chunk(FILE* from, wchar_t** buffer){
         printf("Error when allocating memory.\n");
         return -1;
     }
-    for(size_t i = 0; i < source_size; ++i) {
+    for(size_t i = 0; i < source_size - 1; ++i) {
         if(feof(from)) {
             printf("Unable to scanf text.\n");
             free(*buffer);
@@ -36,6 +36,7 @@ int read_file_chunk(FILE* from, wchar_t** buffer){
 // returns the frequency of returned pair.
 size_t most_frequent_pair(const wchar_t* str, size_t str_size, wchar_t (*pair)[2]) {
     size_t mfreq = 0; // max freq
+    if(str_size < 3) return 0;
     for(size_t i = 0; i < str_size - 3; ++i) {
         size_t cur = 1;
         wchar_t a = str[i], b = str[i + 1];
@@ -110,7 +111,7 @@ size_t encode(wchar_t** from_buffer, size_t buffer_size) {
         printf("%ls\n", *from_buffer);
         freq = most_frequent_pair(*from_buffer, buffer_size, &pair);
         printf("current pair is %ls.\n", pair);
-        if(freq == 1) break;
+        if(freq <= 1) break;
         buffer_size = copy_with_replaced_pair(*from_buffer, buffer_size, to_buffer, pair, replace_to_char++);
         to_buffer[buffer_size] = '\0';
 

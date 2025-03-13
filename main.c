@@ -1,17 +1,23 @@
+#include "cli_parameters.h"
 #include "generate_example.h"
 #include "bpe.h"
 #include <locale.h>
 #include <time.h>
 #include <stdlib.h>
 
-int main() {
+int main(int argc, char** argv) {
     setlocale(LC_ALL, "C.UTF-8");
     srand(time(NULL));
+    cli_parameters_t cli = resolve_cli_parameters(argc, argv);
+    if(cli.status != 0) return cli.status;
+
     int res;
-    // res = generate_example("example.txt", 50);
-    // if(res) return res;
-    FILE* source = fopen("big.txt", "r");
-    FILE* destination = fopen("destination.txt", "w");
+    if(cli.generate_tests) {
+        res = generate_example(cli.source, cli.size_of_generated);
+        if(res) return res;
+    }
+    FILE* source = fopen(cli.source, "r");
+    FILE* destination = fopen(cli.destination, "w");
     if(source == NULL || destination == NULL) {
         printf("Failed to open source or destination.\n");
         return -1;
