@@ -4,31 +4,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-// reads one chunk of text from file.
-// from - stream to opened file to read from
-// buffer - returned string
-// returns string's size, or negative value if error.
-int read_file_chunk(FILE* from, wchar_t** buffer){
-    size_t source_size = get_file_size(from) + 1; // + '0' 
-    printf("loaded %zd characters.\n", source_size);
-    *buffer = (wchar_t*)malloc(sizeof(wchar_t) * source_size);
-    if(*buffer == NULL) {
-        printf("Error when allocating memory.\n");
-        return -1;
-    }
-    for(size_t i = 0; i < source_size - 1; ++i) {
-        if(feof(from)) {
-            printf("Unable to scanf text.\n");
-            free(*buffer);
-            return -2;
-        }
-
-        (*buffer)[i] = fgetc(from);
-    }
-    (*buffer)[source_size - 1] = '\0'; 
-    return source_size; 
-}
-
 // counts the most frequent pair of characters.
 // str - given wide string
 // str_size - size of str
@@ -123,10 +98,6 @@ size_t encode(wchar_t** from_buffer, size_t buffer_size) {
     return buffer_size;
 }
 
-int write_chunk_to_file(FILE* dest, wchar_t* buffer) {
-    return fprintf(dest, "%ls", buffer) < 0 ? -1 : 0;
-}
-
 #define BPE_END(code) \
 free(buffer); \
 return code
@@ -142,7 +113,5 @@ int bpe_encode(FILE* source, FILE* dest) {
         printf("Failed while writing string: %ls.\n", buffer);
         BPE_END(-3);
     }
-
-    free(buffer);
-    return 0;
+    BPE_END(0);
 }
