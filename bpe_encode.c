@@ -58,6 +58,19 @@ size_t copy_with_replaced_pair(const wchar_t* from_buffer,
     return toi;
 }
 
+int copy_to_shorter_memory(wchar_t** from_buffer, size_t buffer_size) {
+    wchar_t* new_buffer = malloc(sizeof(wchar_t) * buffer_size);
+    if(new_buffer == NULL) {
+        printf("Error while allocating shorter chunk of memory.\n");
+        return -1;
+    }
+    for(size_t i = 0; i < buffer_size; ++i) {
+        new_buffer[i] = (*from_buffer)[i];
+    }
+    free(*from_buffer);
+    *from_buffer = new_buffer;
+    return 0;
+}
 // returns new size of encoded text. changes given string's pointer to a new memory block.
 size_t encode(wchar_t** from_buffer, size_t buffer_size) {
     // Assume that initial string contains any ASCII characters [0; 255].
@@ -87,7 +100,8 @@ size_t encode(wchar_t** from_buffer, size_t buffer_size) {
         freq = most_frequent_pair(*from_buffer, buffer_size, &pair);
         if(freq <= 1) break;
 #ifdef VERBOSE
-        printf("%zu`th iteration. replacing pair %lc%lc with frequency %zu.\n", iteration + 1, pair[0], pair[1], freq);
+        printf("%zu`th iteration. replacing pair %lc%lc to %lc with frequency %zu.\n", 
+               iteration + 1, pair[0], pair[1], replace_to_char, freq);
 #endif
         buffer_size = copy_with_replaced_pair(*from_buffer, buffer_size, to_buffer, pair, replace_to_char++);
         to_buffer[buffer_size] = '\0';
@@ -97,6 +111,7 @@ size_t encode(wchar_t** from_buffer, size_t buffer_size) {
         to_buffer = swap;
     }
     free(to_buffer);
+    copy_to_shorter_memory(from_buffer, buffer_size);
     return buffer_size;
 }
 
