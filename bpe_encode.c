@@ -5,6 +5,12 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+typedef struct {
+    wchar_t first;
+    wchar_t second;
+    wchar_t to;
+} replacement_t;
+
 // counts the most frequent pair of characters.
 // str - given wide string
 // str_size - size of str
@@ -71,48 +77,63 @@ int copy_to_shorter_memory(wchar_t** from_buffer, size_t buffer_size) {
     *from_buffer = new_buffer;
     return 0;
 }
+
+#define SWAP_BUFFERS(a, b) \
+    wchar_t* swap = a; \
+    a = b; \
+    b = swap
+#define ADD_TO_TABLE(table, id, arg_first, arg_second, arg_to) \
+    replacement_t rep; \
+    rep.first = arg_first; \
+    rep.second = arg_second; \
+    rep.to = arg_to; \
+    table[id] = rep
+
 // returns new size of encoded text. changes given string's pointer to a new memory block.
+// Assume that initial string contains any ASCII characters [0; 255].
+// To generate additional characters, we can only use unused characters.
+// So we'll be using characters from [256;4294967295].
+//
+// 1. count the pair frequency
+// 2. count the most frequent pair
+// 3. replace these pairs with some character
+// 4. store in stack(?) replacement data
+// 5. repeat until no pairs met
+// 6. smh return that replacement stack
+
+// instead of allocating new memory each time, we will exchange
+// data from buffer to this pointer. result will be third block
+// of memory with changed lower size.
 size_t encode(wchar_t** from_buffer, size_t buffer_size) {
-    // Assume that initial string contains any ASCII characters [0; 255].
-    // To generate additional characters, we can only use unused characters.
-    // So we'll be using characters from [256;4294967295].
-    //
-    // 1. count the pair frequency
-    // 2. count the most frequent pair
-    // 3. replace these pairs with some character
-    // 4. store in stack(?) replacement data
-    // 5. repeat until no pairs met
-    // 6. smh return that replacement stack
-
-    // instead of allocating new memory each time, we will exchange
-    // data from buffer to this pointer. result will be third block
-    // of memory with changed lower size.
     wchar_t* to_buffer = malloc(sizeof(wchar_t) * buffer_size);
-
     // two characters defining pair
     wchar_t pair[2];
     // amount of occurences of pair above
     size_t freq;
     wchar_t replace_to_char = 256;
-
+    replacement_t *rep_table = (replacement_t*) malloc(sizeof(replacement_t) * buffer_size);
     size_t iteration = 0;
-    for(;;++iteration) {
+    for(;;++iteration, ++replace_to_char) {
         freq = most_frequent_pair(*from_buffer, buffer_size, &pair);
         if(freq <= 1) break;
 #ifdef VERBOSE
         printf("%zu`th iteration. replacing pair %lc%lc to %lc with frequency %zu.\n", 
                iteration + 1, pair[0], pair[1], replace_to_char, freq);
 #endif
-        buffer_size = copy_with_replaced_pair(*from_buffer, buffer_size, to_buffer, pair, replace_to_char++);
+        buffer_size = copy_with_replaced_pair(*from_buffer, buffer_size, to_buffer, pair, replace_to_char);
         to_buffer[buffer_size] = '\0';
-
-        wchar_t* swap = *from_buffer;
-        *from_buffer = to_buffer;
-        to_buffer = swap;
+        SWAP_BUFFERS(*from_buffer, to_buffer);
+        ADD_TO_TABLE(rep_table, iteration, pair[0], pair[1], replace_to_char);
     }
     free(to_buffer);
-    copy_to_shorter_memory(from_buffer, buffer_size);
-    return buffer_size;
+    wchar_t* short_buffer = malloc(sizeof(wchar_t) * buffer_size + iteration);
+    for(size_t i = 0; i < iteration; ++i){
+        short_buffer[i] = 'Z';
+    }
+    //wcscpy(short_buffer + iteration, *from_buffer);
+    free(*from_buffer);
+    *from_buffer = short_buffer;
+    return buffer_size + iteration;
 }
 
 #define BPE_END(code) \
