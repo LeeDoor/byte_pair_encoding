@@ -1,3 +1,4 @@
+#include "verbose.h"
 #include "file_essential.h"
 
 size_t get_file_size(FILE* file) {
@@ -8,7 +9,9 @@ size_t get_file_size(FILE* file) {
 }
 int read_file_chunk(FILE* from, wchar_t** buffer){
     size_t source_size = get_file_size(from) + 1; // + '0' 
-    printf("loaded %zd characters.\n", source_size);
+#ifdef VERBOSE
+    printf("loaded %zd characters.\n", source_size - 1);
+#endif
     *buffer = (wchar_t*)malloc(sizeof(wchar_t) * source_size);
     if(*buffer == NULL) {
         printf("Error when allocating memory.\n");

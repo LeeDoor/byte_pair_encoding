@@ -1,3 +1,4 @@
+#include "verbose.h"
 #include "bpe.h"
 #include "file_essential.h"
 #include <wchar.h>
@@ -83,10 +84,11 @@ size_t encode(wchar_t** from_buffer, size_t buffer_size) {
 
     size_t iteration = 0;
     for(;;++iteration) {
-        printf("%ls\n", *from_buffer);
         freq = most_frequent_pair(*from_buffer, buffer_size, &pair);
-        printf("current pair is %ls.\n", pair);
         if(freq <= 1) break;
+#ifdef VERBOSE
+        printf("%zu`th iteration. replacing pair %lc%lc with frequency %zu.\n", iteration + 1, pair[0], pair[1], freq);
+#endif
         buffer_size = copy_with_replaced_pair(*from_buffer, buffer_size, to_buffer, pair, replace_to_char++);
         to_buffer[buffer_size] = '\0';
 
@@ -107,11 +109,16 @@ int bpe_encode(FILE* source, FILE* dest) {
     int res = read_file_chunk(source, &buffer);
     if(res < 0) return -1;
     size_t buffer_size = res;
-
+#ifdef VERBOSE
+    printf("Initial line:\n%ls\n", buffer);
+#endif
     buffer_size = encode(&buffer, buffer_size);
     if(write_chunk_to_file(dest, buffer)) {
         printf("Failed while writing string: %ls.\n", buffer);
         BPE_END(-3);
     }
+#ifdef VERBOSE
+    printf("Result line:\n%ls\n", buffer);
+#endif
     BPE_END(0);
 }

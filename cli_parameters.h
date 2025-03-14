@@ -9,6 +9,7 @@ typedef struct {
     size_t size_of_generated;
     char* source;
     char* destination;
+    bool verbose;
     int status;
 } cli_parameters_t;
 
