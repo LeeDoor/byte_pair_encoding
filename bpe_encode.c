@@ -115,7 +115,7 @@ size_t encode(wchar_t** from_buffer, size_t buffer_size) {
     size_t iteration = 0;
     for(;;++iteration, ++replace_to_char) {
         freq = most_frequent_pair(*from_buffer, buffer_size, &pair);
-        if(freq <= 1) break;
+        if(freq <= 2) break;
 #ifdef VERBOSE
         printf("%zu`th iteration. replacing pair %lc%lc to %lc with frequency %zu.\n", 
                iteration + 1, pair[0], pair[1], replace_to_char, freq);
@@ -125,14 +125,15 @@ size_t encode(wchar_t** from_buffer, size_t buffer_size) {
         SWAP_BUFFERS(*from_buffer, to_buffer);
         ADD_TO_TABLE(rep_table, iteration, pair[0], pair[1], replace_to_char);
     }
-    free(to_buffer);
-    wchar_t* short_buffer = malloc(sizeof(wchar_t) * buffer_size + iteration);
+    wchar_t* short_buffer = malloc(sizeof(wchar_t) * (buffer_size + iteration));
     for(size_t i = 0; i < iteration; ++i){
         short_buffer[i] = 'Z';
     }
-    //wcscpy(short_buffer + iteration, *from_buffer);
+    wcscpy(short_buffer + iteration, *from_buffer);
     free(*from_buffer);
     *from_buffer = short_buffer;
+    free(to_buffer);
+    free(rep_table);
     return buffer_size + iteration;
 }
 
