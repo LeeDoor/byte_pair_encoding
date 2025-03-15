@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 #define DEFAULT_SOURCE "source.txt"
-#define DEFAULT_DESTINATION "source(encoded).txt"
+#define DEFAULT_DESTINATION "source_encoded.txt"
 #define CLI_DEFAULT_GENERATE_SIZE 500
 #define PARAM_ERROR(err, msg, cli) \
     printf(msg); \

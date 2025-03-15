@@ -125,16 +125,21 @@ size_t encode(wchar_t** from_buffer, size_t buffer_size) {
         SWAP_BUFFERS(*from_buffer, to_buffer);
         ADD_TO_TABLE(rep_table, iteration, pair[0], pair[1], replace_to_char);
     }
-    wchar_t* short_buffer = malloc(sizeof(wchar_t) * (buffer_size + iteration));
+    size_t metadata_cap = iteration * 3 + 1;
+    buffer_size += metadata_cap;
+    wchar_t* short_buffer = malloc(sizeof(wchar_t) * buffer_size);
+    short_buffer[0] = iteration + 'a'; // for visual comfort
     for(size_t i = 0; i < iteration; ++i){
-        short_buffer[i] = 'Z';
+        short_buffer[i + 1] = rep_table[i].to;
+        short_buffer[i + 2] = rep_table[i].first;
+        short_buffer[i + 3] = rep_table[i].second;
     }
-    wcscpy(short_buffer + iteration, *from_buffer);
+    wcscpy(short_buffer + metadata_cap, *from_buffer);
     free(*from_buffer);
     *from_buffer = short_buffer;
     free(to_buffer);
     free(rep_table);
-    return buffer_size + iteration;
+    return buffer_size;
 }
 
 #define BPE_END(code) \
