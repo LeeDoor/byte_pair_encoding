@@ -123,7 +123,7 @@ size_t encode(wchar_t** from_buffer, size_t buffer_size) {
 free(buffer); \
 return code
 
-int bpe_encode(FILE* source, FILE* dest) {
+int bpe_encode_file(FILE* source, FILE* dest) {
     wchar_t* buffer;
     int res = read_file_chunk(source, &buffer);
     if(res < 0) return -1;
