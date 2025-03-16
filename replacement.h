@@ -9,6 +9,7 @@ typedef struct {
     wchar_t to;
 } replacement_t;
 
+replacement_t* rep_table_new(size_t size);
 int rep_table_to_string(const replacement_t* src,
                         size_t table_size,
                         wchar_t* dest);

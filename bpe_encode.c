@@ -1,6 +1,7 @@
 #include "verbose.h"
 #include "bpe.h"
 #include "file_essential.h"
+#include "replacement.h"
 #include <wchar.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -83,21 +84,6 @@ int copy_to_shorter_memory(wchar_t** from_buffer, size_t buffer_size) {
     rep.to = arg_to; \
     table[id] = rep
 
-// returns new size of encoded text. changes given string's pointer to a new memory block.
-// Assume that initial string contains any ASCII characters [0; 255].
-// To generate additional characters, we can only use unused characters.
-// So we'll be using characters from [256;4294967295].
-//
-// 1. count the pair frequency
-// 2. count the most frequent pair
-// 3. replace these pairs with some character
-// 4. store in stack(?) replacement data
-// 5. repeat until no pairs met
-// 6. smh return that replacement stack
-
-// instead of allocating new memory each time, we will exchange
-// data from buffer to this pointer. result will be third block
-// of memory with changed lower size.
 size_t encode(wchar_t** from_buffer, size_t buffer_size) {
     wchar_t* to_buffer = malloc(sizeof(wchar_t) * buffer_size);
     // two characters defining pair
@@ -105,7 +91,7 @@ size_t encode(wchar_t** from_buffer, size_t buffer_size) {
     // amount of occurences of pair above
     size_t freq;
     wchar_t replace_to_char = 256;
-    replacement_t *rep_table = (replacement_t*) malloc(sizeof(replacement_t) * buffer_size);
+    replacement_t *rep_table = rep_table_new(buffer_size);
     size_t iteration = 0;
     for(;;++iteration, ++replace_to_char) {
         freq = most_frequent_pair(*from_buffer, buffer_size, &pair);
@@ -122,6 +108,7 @@ size_t encode(wchar_t** from_buffer, size_t buffer_size) {
     size_t metadata_cap = iteration * 3 + 1;
     buffer_size += metadata_cap;
     wchar_t* short_buffer = malloc(sizeof(wchar_t) * buffer_size);
+    rep_table_to_string(rep_table, iteration, short_buffer); 
     wcscpy(short_buffer + metadata_cap, *from_buffer);
     free(*from_buffer);
     *from_buffer = short_buffer;
