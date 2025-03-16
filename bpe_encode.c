@@ -73,17 +73,23 @@ int copy_to_shorter_memory(wchar_t** from_buffer, size_t buffer_size) {
     return 0;
 }
 
+wchar_t* form_the_result_string(const wchar_t* from_buffer, 
+                                size_t buffer_size,
+                                const replacement_t* rep_table,
+                                size_t table_size) {
+
+    size_t metadata_cap = table_size * 3 + 1;
+    buffer_size += metadata_cap;
+    wchar_t* short_buffer = malloc(sizeof(wchar_t) * buffer_size);
+    rep_table_to_string(rep_table, table_size, short_buffer); 
+    wcscpy(short_buffer + metadata_cap, from_buffer);
+    return short_buffer;
+} 
+
 #define SWAP_BUFFERS(a, b) \
     wchar_t* swap = a; \
     a = b; \
     b = swap
-#define ADD_TO_TABLE(table, id, arg_first, arg_second, arg_to) \
-    replacement_t rep; \
-    rep.first = arg_first; \
-    rep.second = arg_second; \
-    rep.to = arg_to; \
-    table[id] = rep
-
 size_t encode(wchar_t** from_buffer, size_t buffer_size) {
     wchar_t* to_buffer = malloc(sizeof(wchar_t) * buffer_size);
     // two characters defining pair
@@ -103,13 +109,9 @@ size_t encode(wchar_t** from_buffer, size_t buffer_size) {
         buffer_size = copy_with_replaced_pair(*from_buffer, buffer_size, to_buffer, pair, replace_to_char);
         to_buffer[buffer_size] = '\0';
         SWAP_BUFFERS(*from_buffer, to_buffer);
-        ADD_TO_TABLE(rep_table, iteration, pair[0], pair[1], replace_to_char);
+        rep_table_add(rep_table, iteration, pair[0], pair[1], replace_to_char);
     }
-    size_t metadata_cap = iteration * 3 + 1;
-    buffer_size += metadata_cap;
-    wchar_t* short_buffer = malloc(sizeof(wchar_t) * buffer_size);
-    rep_table_to_string(rep_table, iteration, short_buffer); 
-    wcscpy(short_buffer + metadata_cap, *from_buffer);
+    wchar_t* short_buffer = form_the_result_string(*from_buffer, buffer_size, rep_table, iteration);
     free(*from_buffer);
     *from_buffer = short_buffer;
     free(to_buffer);
