@@ -2,8 +2,8 @@
 #include <string.h>
 #include <stdio.h>
 
-#define DEFAULT_SOURCE "source.txt"
-#define DEFAULT_DESTINATION "source_encoded.txt"
+#define DEFAULT_ENCODED "encoded.txt"
+#define DEFAULT_ORIGINAL "original.txt"
 #define CLI_DEFAULT_GENERATE_SIZE 500
 #define PARAM_ERROR(err, msg, cli) \
     printf(msg); \
@@ -11,12 +11,13 @@
     return cli
 
 void cli_parameters_ctor(cli_parameters_t* cli) {
-    cli->source = DEFAULT_SOURCE;
-    cli->destination = DEFAULT_DESTINATION;
+    cli->source = DEFAULT_ENCODED;
+    cli->destination = DEFAULT_ORIGINAL;
     cli->generate_tests = false;
     cli->size_of_generated = CLI_DEFAULT_GENERATE_SIZE;
     cli->verbose = false;
     cli->status = 0;
+    cli->action = NONE;
 }
 cli_parameters_t resolve_cli_parameters(int argc, char** argv) {
     cli_parameters_t cli;
@@ -54,6 +55,16 @@ cli_parameters_t resolve_cli_parameters(int argc, char** argv) {
                 PARAM_ERROR(-3, "Wrong --destination usage.\n", cli);
             }
             cli.destination = argv[i];
+        }
+        else if (strcmp(argv[i], "-e") == 0 || strcmp(argv[i], "--encode") == 0) {
+            cli.action = ENCODE;
+            cli.source = DEFAULT_ORIGINAL;
+            cli.destination = DEFAULT_ENCODED;
+        }
+        else if (strcmp(argv[i], "-d") == 0 || strcmp(argv[i], "--decode") == 0) {
+            cli.action = DECODE;
+            cli.destination = DEFAULT_ORIGINAL;
+            cli.source = DEFAULT_ENCODED;
         }
         else {
             PARAM_ERROR(-100, "Undefined CLI parameter.\n", cli);

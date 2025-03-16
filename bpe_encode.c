@@ -132,7 +132,7 @@ int bpe_encode_file(FILE* source, FILE* dest) {
     printf("Initial line:\n%ls\n", buffer);
 #endif
     buffer_size = encode(&buffer, buffer_size);
-    if(write_chunk_to_file(dest, buffer)) {
+    if(write_wide_chunk_to_file(dest, buffer)) {
         printf("Failed while writing string: %ls.\n", buffer);
         BPE_END(-3);
     }

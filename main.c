@@ -22,7 +22,20 @@ int main(int argc, char** argv) {
         printf("Failed to open source or destination.\n");
         return -1;
     }
-    res = bpe_encode_file(source, destination);
+    switch(cli.action) {
+        case ENCODE:
+            printf("Encoding.\n");
+            res = bpe_encode_file(source, destination);
+        break;
+        case DECODE:
+            printf("Decoding.\n");
+            res = bpe_decode_file(source, destination);
+        break;
+        case NONE:
+            printf("Action type not selected. Please use -e or -d to encode/decode.\n");
+            res = 1;
+        break;
+    }
     fclose(source);
     fclose(destination);
     return res;

@@ -4,6 +4,12 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
+typedef enum {
+    NONE,
+    ENCODE,
+    DECODE
+} BPE_ACTION;
+
 typedef struct {
     bool generate_tests;
     size_t size_of_generated;
@@ -11,6 +17,7 @@ typedef struct {
     char* destination;
     bool verbose;
     int status;
+    BPE_ACTION action;
 } cli_parameters_t;
 
 void cli_parameters_ctor(cli_parameters_t*);
