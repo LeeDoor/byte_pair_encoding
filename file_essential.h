@@ -17,6 +17,5 @@
 // returns string's size, or negative value if error.
 int read_file_chunk(FILE* from, wchar_t** buffer);
 
-int write_wide_chunk_to_file(FILE* dest, wchar_t* buffer);
-int write_char_chunk_to_file(FILE* dest, char* buffer);
+int write_chunk_to_file(FILE* dest, wchar_t* buffer);
 #endif

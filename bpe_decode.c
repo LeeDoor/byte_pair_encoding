@@ -1,18 +1,22 @@
+#include "verbose.h"
 #include "bpe.h"
 #include "file_essential.h"
 
 int bpe_decode_file(FILE* source, FILE* dest) {
-    char* buffer = malloc(sizeof(char) * 20);
-    if(buffer == NULL) {
-        printf("Buffer allocation failed.\n");
+    wchar_t* from_buffer;
+    int res = read_file_chunk(source, &from_buffer);
+    if(res < 0) {
+        printf("Failed to read from file.\n");
         return -1;
     }
-    for(int i = 0; i < 20; ++i) buffer[i] = 'a' + i;
-    int res = write_char_chunk_to_file(dest, buffer);
-    free(buffer);
-    if(res) {
-        printf("Char chunk writing failed.\n");
-        return res;
-    }
+    size_t buffer_size = res;
+#ifdef VERBOSE
+    printf("Initial line:\n%ls\n", from_buffer); 
+#endif
+    
+#ifdef VERBOSE
+    printf("Decoded line:\n%ls\n", from_buffer); 
+#endif
+    free(from_buffer);
     return 0;
 }

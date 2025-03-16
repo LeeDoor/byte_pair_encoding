@@ -30,10 +30,6 @@ int read_file_chunk(FILE* from, wchar_t** buffer){
     return source_size; 
 }
 
-int write_wide_chunk_to_file(FILE* dest, wchar_t* buffer) {
+int write_chunk_to_file(FILE* dest, wchar_t* buffer) {
     return fprintf(dest, "%ls", buffer) < 0 ? -1 : 0;
-}
-
-int write_char_chunk_to_file(FILE* dest, char* buffer) {
-    return fprintf(dest, "%s", buffer) < 0 ? -1 : 0;
 }
