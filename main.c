@@ -1,6 +1,7 @@
 #include "cli_parameters.h"
 #include "generate_example.h"
 #include "bpe.h"
+#include "file_essential.h"
 #include <locale.h>
 #include <time.h>
 #include <stdlib.h>
@@ -25,11 +26,11 @@ int main(int argc, char** argv) {
     switch(cli.action) {
         case ENCODE:
             printf("Encoding.\n");
-            res = bpe_encode_file(source, destination);
+            res = from_file(source, destination, bpe_encode);
         break;
         case DECODE:
             printf("Decoding.\n");
-            res = bpe_decode_file(source, destination);
+            res = from_file(source, destination, bpe_decode);
         break;
         case NONE:
             printf("Action type not selected. Please use -e or -d to encode/decode.\n");

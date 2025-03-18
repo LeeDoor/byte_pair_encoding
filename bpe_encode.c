@@ -1,9 +1,9 @@
 #include "verbose.h"
 #include "bpe.h"
-#include "file_essential.h"
 #include "replacement.h"
 #include <wchar.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <unistd.h>
 
 // counts the most frequent pair of characters.
@@ -75,14 +75,16 @@ int copy_to_shorter_memory(wchar_t** from_buffer, size_t buffer_size) {
 
 wchar_t* form_the_result_string(const wchar_t* from_buffer, 
                                 size_t buffer_size,
+                                size_t initial_buffer_size,
                                 const replacement_t* rep_table,
                                 size_t table_size) {
-
-    size_t metadata_cap = table_size * 3 + 1;
-    buffer_size += metadata_cap;
+    // buffer[0] = initial size, buffer[1] = amount of replacements
+    size_t metadata_size = 2;
+    size_t encode_data_size = table_size * 3 + metadata_size;
+    buffer_size += encode_data_size;
     wchar_t* short_buffer = malloc(sizeof(wchar_t) * buffer_size);
-    rep_table_to_string(rep_table, table_size, short_buffer); 
-    wcscpy(short_buffer + metadata_cap, from_buffer);
+    rep_table_to_string(rep_table, table_size, initial_buffer_size, short_buffer); 
+    wcscpy(short_buffer + encode_data_size, from_buffer);
     return short_buffer;
 } 
 
@@ -90,12 +92,11 @@ wchar_t* form_the_result_string(const wchar_t* from_buffer,
     wchar_t* swap = a; \
     a = b; \
     b = swap
-size_t encode(wchar_t** from_buffer, size_t buffer_size) {
+size_t bpe_encode(wchar_t** from_buffer, size_t buffer_size) {
+    const size_t initial_buffer_size = buffer_size;
     wchar_t* to_buffer = malloc(sizeof(wchar_t) * buffer_size);
-    // two characters defining pair
     wchar_t pair[2];
-    // amount of occurences of pair above
-    size_t freq;
+    size_t freq = 0;
     wchar_t replace_to_char = 256;
     replacement_t *rep_table = rep_table_new(buffer_size);
     size_t iteration = 0;
@@ -106,12 +107,16 @@ size_t encode(wchar_t** from_buffer, size_t buffer_size) {
         printf("%zu`th iteration. replacing pair %lc%lc to %lc with frequency %zu.\n", 
                iteration + 1, pair[0], pair[1], replace_to_char, freq);
 #endif
-        buffer_size = copy_with_replaced_pair(*from_buffer, buffer_size, to_buffer, pair, replace_to_char);
+        buffer_size = copy_with_replaced_pair(*from_buffer, buffer_size, 
+                                              to_buffer, 
+                                              pair, replace_to_char);
         to_buffer[buffer_size] = '\0';
         SWAP_BUFFERS(*from_buffer, to_buffer);
         rep_table_add(rep_table, iteration, pair[0], pair[1], replace_to_char);
     }
-    wchar_t* short_buffer = form_the_result_string(*from_buffer, buffer_size, rep_table, iteration);
+    wchar_t* short_buffer = form_the_result_string(*from_buffer, buffer_size, 
+                                                   initial_buffer_size,
+                                                   rep_table, iteration);
     free(*from_buffer);
     *from_buffer = short_buffer;
     free(to_buffer);
@@ -119,25 +124,3 @@ size_t encode(wchar_t** from_buffer, size_t buffer_size) {
     return buffer_size;
 }
 
-#define BPE_END(code) \
-free(buffer); \
-return code
-
-int bpe_encode_file(FILE* source, FILE* dest) {
-    wchar_t* buffer;
-    int res = read_file_chunk(source, &buffer);
-    if(res < 0) return -1;
-    size_t buffer_size = res;
-#ifdef VERBOSE
-    printf("Initial line:\n%ls\n", buffer);
-#endif
-    buffer_size = encode(&buffer, buffer_size);
-    if(write_wide_chunk_to_file(dest, buffer)) {
-        printf("Failed while writing string: %ls.\n", buffer);
-        BPE_END(-3);
-    }
-#ifdef VERBOSE
-    printf("Result line:\n%ls\n", buffer);
-#endif
-    BPE_END(0);
-}

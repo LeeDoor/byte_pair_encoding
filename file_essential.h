@@ -18,4 +18,7 @@
 int read_file_chunk(FILE* from, wchar_t** buffer);
 
 int write_chunk_to_file(FILE* dest, wchar_t* buffer);
+
+typedef size_t (*bpe_func)(wchar_t** from_buffer, size_t buffer_size);
+int from_file(FILE* source, FILE* dest, bpe_func func);
 #endif
