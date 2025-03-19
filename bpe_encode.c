@@ -72,6 +72,10 @@ int copy_to_shorter_memory(wchar_t** from_buffer, size_t buffer_size) {
     *from_buffer = new_buffer;
     return 0;
 }
+int metadata_to_string(wchar_t* short_buffer, size_t initial_size) {
+    short_buffer[0] = initial_size;
+    return 0;
+}
 
 wchar_t* form_the_result_string(const wchar_t* from_buffer, 
                                 size_t buffer_size,
@@ -79,12 +83,13 @@ wchar_t* form_the_result_string(const wchar_t* from_buffer,
                                 const replacement_t* rep_table,
                                 size_t table_size) {
     // buffer[0] = initial size, buffer[1] = amount of replacements
-    size_t metadata_size = 2;
-    size_t encode_data_size = table_size * 3 + metadata_size;
-    buffer_size += encode_data_size;
+    size_t metadata_size = 1;
+    size_t encode_table_size = table_size * 3 + 1;
+    buffer_size += encode_table_size + metadata_size;
     wchar_t* short_buffer = malloc(sizeof(wchar_t) * buffer_size);
+    metadata_to_string(short_buffer, initial_buffer_size);
     rep_table_to_string(rep_table, table_size, initial_buffer_size, short_buffer); 
-    wcscpy(short_buffer + encode_data_size, from_buffer);
+    wcscpy(short_buffer + encode_table_size + metadata_size, from_buffer);
     return short_buffer;
 } 
 
