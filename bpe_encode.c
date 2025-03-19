@@ -1,6 +1,7 @@
 #include "verbose.h"
 #include "bpe.h"
 #include "replacement.h"
+#include "metadata.h"
 #include <wchar.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -11,7 +12,7 @@
 // str_size - size of str
 // pair - pointer to an array to assign the most frequent pair
 // returns the frequency of returned pair.
-size_t most_frequent_pair(const wchar_t* str, size_t str_size, wchar_t (*pair)[2]) {
+size_t most_frequent_pair(const wchar_t* str, size_t str_size, replacement_t* rep) {
     size_t mfreq = 0; // max freq
     if(str_size < 3) return 0;
     for(size_t i = 0; i < str_size - 3; ++i) {
@@ -25,8 +26,8 @@ size_t most_frequent_pair(const wchar_t* str, size_t str_size, wchar_t (*pair)[2
         }
         if(mfreq < cur) {
             mfreq = cur;
-            (*pair)[0] = a;
-            (*pair)[1] = b;
+            rep->first = a;
+            rep->second = b;
         }
     }
     return mfreq; 
@@ -58,89 +59,77 @@ size_t copy_with_replacement(const wchar_t* from_buffer,
     return toi;
 }
 
-int copy_to_shorter_memory(wchar_t** from_buffer, size_t buffer_size) {
-    wchar_t* new_buffer = malloc(sizeof(wchar_t) * buffer_size);
-    if(new_buffer == NULL) {
-        printf("Error while allocating shorter chunk of memory.\n");
-        return -1;
-    }
-    for(size_t i = 0; i < buffer_size; ++i) {
-        new_buffer[i] = (*from_buffer)[i];
-    }
-    free(*from_buffer);
-    *from_buffer = new_buffer;
-    return 0;
-}
-int metadata_to_string(wchar_t* short_buffer, size_t initial_size) {
-    short_buffer[0] = initial_size;
-    return 0;
-}
-
 wchar_t* form_the_result_string(const wchar_t* from_buffer, 
                                 size_t buffer_size,
-                                size_t initial_buffer_size,
-                                const replacement_t* rep_table,
-                                size_t table_size) {
-    // buffer[0] = initial size, buffer[1] = amount of replacements
-    size_t metadata_size = 1;
-    size_t encode_table_size = table_size * 3 + 1;
-    buffer_size += encode_table_size + metadata_size;
-    wchar_t* short_buffer = malloc(sizeof(wchar_t) * buffer_size);
-    if(short_buffer == NULL) return NULL;
-    metadata_to_string(short_buffer, initial_buffer_size);
-    rep_table_to_string(rep_table, table_size, initial_buffer_size, short_buffer); 
-    wcscpy(short_buffer + encode_table_size + metadata_size, from_buffer);
-    return short_buffer;
+                                metadata_t* metadata) {
+    size_t metadata_size = metadata_accumulate_string_size(metadata);
+    size_t result_size = buffer_size + metadata_size;
+    wchar_t* result = (wchar_t*)malloc(sizeof(wchar_t) * result_size);
+    if(result == NULL) {
+        printf("Failed while allocating memory for result string.\n");
+        return NULL;
+    }
+    int res = metadata_to_string(metadata, result, result_size);
+    if(res) {
+        printf("Failed while forming metadata to string.\n");
+        free(result);
+        return NULL;
+    }
+    wcscpy(result + metadata_size, from_buffer); 
+    return result;
 } 
 
 #define SWAP_BUFFERS(a, b) \
-    wchar_t* swap = a; \
-    a = b; \
-    b = swap
-int bpe_encode(wchar_t** from_buffer, size_t buffer_size) {
-    const size_t initial_buffer_size = buffer_size;
-    wchar_t* to_buffer = malloc(sizeof(wchar_t) * buffer_size);
-    wchar_t pair[2];
+wchar_t* swap = a; \
+a = b; \
+b = swap
+int encode_one_pair(wchar_t** from_buffer, size_t* buffer_size,
+                    wchar_t* to_buffer,
+                    size_t iteration, replacement_t* cur_rep) {
     size_t freq = 0;
-    wchar_t replace_to_char = 256;
-    replacement_t *rep_table = rep_table_new(buffer_size);
-    if(rep_table == NULL) {
-        printf("Failed to allocate replacement table.\n");
+    freq = most_frequent_pair(*from_buffer, *buffer_size, cur_rep);
+    if(freq <= 2) return 1;
+#ifdef VERBOSE
+    printf("%zu`th iteration. replacing pair %lc%lc to %lc with frequency %zu\n",
+           iteration + 1, cur_rep->first, cur_rep->second, cur_rep->to, freq);
+#endif
+    *buffer_size = copy_with_replacement(*from_buffer, *buffer_size, 
+                                        to_buffer, 
+                                        *cur_rep);
+    to_buffer[*buffer_size] = '\0';
+    SWAP_BUFFERS(*from_buffer, to_buffer);
+    return 0;
+}
+
+int bpe_encode(wchar_t** from_buffer, size_t buffer_size) {
+    wchar_t* to_buffer = malloc(sizeof(wchar_t) * buffer_size);
+    metadata_t* metadata = metadata_new(buffer_size);
+    if(metadata == NULL) {
+        printf("Failed to allocate metadata memory.\n");
         free(to_buffer);
         return -1;
     }
+    metadata->initial_size = buffer_size;
     size_t iteration = 0;
     replacement_t cur_rep;
-    cur_rep.to = replace_to_char;
+    cur_rep.to = 256;
     for(;;++iteration, ++cur_rep.to) {
-        freq = most_frequent_pair(*from_buffer, buffer_size, &pair);
-        if(freq <= 2) break;
-        cur_rep.first = pair[0];
-        cur_rep.second = pair[1];
-#ifdef VERBOSE
-        printf("%zu`th iteration. replacing pair %lc%lc to %lc with frequency %zu.\n", 
-               iteration + 1, cur_rep.first, cur_rep.second, cur_rep.to, freq);
-#endif
-        buffer_size = copy_with_replacement(*from_buffer, buffer_size, 
-                                            to_buffer, 
-                                            cur_rep);
-        to_buffer[buffer_size] = '\0';
-        SWAP_BUFFERS(*from_buffer, to_buffer);
-        rep_table[iteration] = cur_rep;
+        if(encode_one_pair(from_buffer, &buffer_size, to_buffer, iteration, &cur_rep))
+            break;
+        metadata->replacement_table[iteration] = cur_rep;
     }
-    wchar_t* short_buffer = form_the_result_string(*from_buffer, buffer_size, 
-                                                   initial_buffer_size,
-                                                   rep_table, iteration);
+    wchar_t* short_buffer = form_the_result_string(*from_buffer, buffer_size,
+                                                   metadata);
     if(short_buffer == NULL) {
         printf("Failed to allocate buffer.\n");
         free(to_buffer);
-        free(rep_table);
+        free(metadata);
         return -2;
     }
     free(*from_buffer);
     *from_buffer = short_buffer;
     free(to_buffer);
-    free(rep_table);
+    free(metadata);
     return buffer_size;
 }
 

@@ -30,7 +30,7 @@ int main(int argc, char** argv) {
         break;
         case DECODE:
             printf("Decoding.\n");
-            res = from_file(source, destination, bpe_decode);
+            //res = from_file(source, destination, bpe_decode);
         break;
         case NONE:
             printf("Action type not selected. Please use -e or -d to encode/decode.\n");
