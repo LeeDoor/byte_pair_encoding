@@ -46,7 +46,12 @@ int from_file(FILE* source, FILE* dest, bpe_func func) {
 #ifdef VERBOSE
     printf("Initial line:\n%ls\n", buffer);
 #endif
-    buffer_size = func(&buffer, buffer_size);
+    res = func(&buffer, buffer_size);
+    if(res < 0) {
+        printf("Failed while en(de)coding the file.\n");
+        BPE_END(-2);
+    }
+    buffer_size = res;
     if(write_chunk_to_file(dest, buffer)) {
         printf("Failed while writing string: %ls.\n", buffer);
         BPE_END(-3);

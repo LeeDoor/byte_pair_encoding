@@ -39,16 +39,15 @@ size_t most_frequent_pair(const wchar_t* str, size_t str_size, wchar_t (*pair)[2
 // pair - pair to replace
 // replace_to - character to replace on
 // returns size of copied buffer
-size_t copy_with_replaced_pair(const wchar_t* from_buffer, 
+size_t copy_with_replacement(const wchar_t* from_buffer, 
                                size_t from_buffer_size, 
                                wchar_t* to_buffer, 
-                               const wchar_t pair[2], 
-                               wchar_t replace_to) {
+                               replacement_t rep) {
 
     size_t fri = 0, toi = 0;
     for(; fri < from_buffer_size - 1; ++fri, ++toi){ 
-        if(from_buffer[fri] == pair[0] && from_buffer[fri + 1] == pair[1]) {
-            to_buffer[toi] = replace_to;
+        if(from_buffer[fri] == rep.first && from_buffer[fri + 1] == rep.second) {
+            to_buffer[toi] = rep.to;
             ++fri;
         }
         else {
@@ -87,6 +86,7 @@ wchar_t* form_the_result_string(const wchar_t* from_buffer,
     size_t encode_table_size = table_size * 3 + 1;
     buffer_size += encode_table_size + metadata_size;
     wchar_t* short_buffer = malloc(sizeof(wchar_t) * buffer_size);
+    if(short_buffer == NULL) return NULL;
     metadata_to_string(short_buffer, initial_buffer_size);
     rep_table_to_string(rep_table, table_size, initial_buffer_size, short_buffer); 
     wcscpy(short_buffer + encode_table_size + metadata_size, from_buffer);
@@ -97,31 +97,46 @@ wchar_t* form_the_result_string(const wchar_t* from_buffer,
     wchar_t* swap = a; \
     a = b; \
     b = swap
-size_t bpe_encode(wchar_t** from_buffer, size_t buffer_size) {
+int bpe_encode(wchar_t** from_buffer, size_t buffer_size) {
     const size_t initial_buffer_size = buffer_size;
     wchar_t* to_buffer = malloc(sizeof(wchar_t) * buffer_size);
     wchar_t pair[2];
     size_t freq = 0;
     wchar_t replace_to_char = 256;
     replacement_t *rep_table = rep_table_new(buffer_size);
+    if(rep_table == NULL) {
+        printf("Failed to allocate replacement table.\n");
+        free(to_buffer);
+        return -1;
+    }
     size_t iteration = 0;
-    for(;;++iteration, ++replace_to_char) {
+    replacement_t cur_rep;
+    cur_rep.to = replace_to_char;
+    for(;;++iteration, ++cur_rep.to) {
         freq = most_frequent_pair(*from_buffer, buffer_size, &pair);
         if(freq <= 2) break;
+        cur_rep.first = pair[0];
+        cur_rep.second = pair[1];
 #ifdef VERBOSE
         printf("%zu`th iteration. replacing pair %lc%lc to %lc with frequency %zu.\n", 
-               iteration + 1, pair[0], pair[1], replace_to_char, freq);
+               iteration + 1, cur_rep.first, cur_rep.second, cur_rep.to, freq);
 #endif
-        buffer_size = copy_with_replaced_pair(*from_buffer, buffer_size, 
-                                              to_buffer, 
-                                              pair, replace_to_char);
+        buffer_size = copy_with_replacement(*from_buffer, buffer_size, 
+                                            to_buffer, 
+                                            cur_rep);
         to_buffer[buffer_size] = '\0';
         SWAP_BUFFERS(*from_buffer, to_buffer);
-        rep_table_add(rep_table, iteration, pair[0], pair[1], replace_to_char);
+        rep_table[iteration] = cur_rep;
     }
     wchar_t* short_buffer = form_the_result_string(*from_buffer, buffer_size, 
                                                    initial_buffer_size,
                                                    rep_table, iteration);
+    if(short_buffer == NULL) {
+        printf("Failed to allocate buffer.\n");
+        free(to_buffer);
+        free(rep_table);
+        return -2;
+    }
     free(*from_buffer);
     *from_buffer = short_buffer;
     free(to_buffer);
