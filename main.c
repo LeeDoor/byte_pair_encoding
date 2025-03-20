@@ -17,7 +17,7 @@ int main(int argc, char** argv) {
         res = generate_example(cli.source, cli.size_of_generated);
         if(res) return res;
     }
-    FILE* source = fopen(cli.source, "r");
+    FILE* source = fopen(cli.source, "rb");
     FILE* destination = fopen(cli.destination, "w");
     if(source == NULL || destination == NULL) {
         printf("Failed to open source or destination.\n");
@@ -26,11 +26,11 @@ int main(int argc, char** argv) {
     switch(cli.action) {
         case ENCODE:
             printf("Encoding.\n");
-            res = from_file(source, destination, bpe_encode);
+            res = from_file(source, destination, bpe_encode, CHAR);
         break;
         case DECODE:
             printf("Decoding.\n");
-            res = from_file(source, destination, bpe_decode);
+            res = from_file(source, destination, bpe_decode, WIDE);
         break;
         case NONE:
             printf("Action type not selected. Please use -e or -d to encode/decode.\n");
