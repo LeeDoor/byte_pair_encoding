@@ -26,11 +26,11 @@ int main(int argc, char** argv) {
     switch(cli.action) {
         case ENCODE:
             printf("Encoding.\n");
-            res = from_file(source, destination, bpe_encode, CHAR);
+            res = from_file(source, destination, bpe_encode);
         break;
         case DECODE:
             printf("Decoding.\n");
-            res = from_file(source, destination, bpe_decode, WIDE);
+            res = from_file(source, destination, bpe_decode);
         break;
         case NONE:
             printf("Action type not selected. Please use -e or -d to encode/decode.\n");

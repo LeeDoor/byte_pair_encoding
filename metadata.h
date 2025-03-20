@@ -2,7 +2,7 @@
 #define METADATA_H
 #include <stddef.h>
 #include "replacement.h"
-
+// #define VISUAL_METADATA
 typedef struct {
     size_t initial_size;
     replacement_t* replacement_table;

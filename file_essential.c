@@ -7,7 +7,7 @@ size_t get_file_size(FILE* file) {
     fseek(file, 0, SEEK_SET);
     return result;
 }
-int read_file_char(FILE* from, wchar_t** buffer){
+int read_file(FILE* from, wchar_t** buffer){
     size_t source_size = get_file_size(from);
 #ifdef VERBOSE
     printf("loaded %zd bytes.\n", source_size);
@@ -26,36 +26,11 @@ int read_file_char(FILE* from, wchar_t** buffer){
         return -1;
     }
     res = mbstowcs(*buffer, read_buffer, source_size);
-    if(res < source_size) {
-        printf("Error when allocating memory.\n");
-        return -1;
+    if(res == 0) {
+        printf("Error when copying to wide string.\n");
+        return -3;
     }
-    (*buffer)[buffer_size - 1] = '\0';
-    return source_size; 
-}
-int read_file_from_wide(FILE* from, wchar_t** buffer){
-    size_t source_size = get_file_size(from);
-#ifdef VERBOSE
-    printf("loaded %zd bytes.\n", source_size);
-#endif
-
-    char* read_buffer = (char*)malloc(sizeof(char)*source_size);
-    size_t res = fread(read_buffer, sizeof(char), source_size, from);
-    if(res < source_size) {
-        printf("Failed to read string.\n");
-        return -2;
-    }
-    size_t buffer_size = source_size + 1; // + \0
-    *buffer = (wchar_t*)malloc(sizeof(wchar_t) * buffer_size);
-    if(*buffer == NULL) {
-        printf("Error when allocating memory.\n");
-        return -1;
-    }
-    res = mbstowcs(*buffer, read_buffer, source_size);
-    if(res < source_size) {
-        printf("Error when allocating memory.\n");
-        return -1;
-    }
+    buffer_size = res + 1;
     (*buffer)[buffer_size - 1] = '\0';
     return source_size; 
 }
@@ -68,17 +43,9 @@ int write_to_file(FILE* dest, wchar_t* buffer) {
 free(buffer); \
 return code
 
-int from_file(FILE* source, FILE* dest, bpe_func func, CHAR_TYPE from) {
+int from_file(FILE* source, FILE* dest, bpe_func func) {
     wchar_t* buffer;
-    int res;
-    switch(from) {
-        case CHAR:
-            res = read_file_char(source, &buffer);
-            break;
-        case WIDE:
-            res = read_file_from_wide(source, &buffer);
-            break;
-    }
+    int res = read_file(source, &buffer);
     if(res < 0) return -1;
     size_t buffer_size = res;
 #ifdef VERBOSE

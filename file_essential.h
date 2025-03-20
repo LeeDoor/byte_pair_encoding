@@ -15,7 +15,7 @@
 // from - stream to opened file to read from
 // buffer - returned string
 // returns string's size, or negative value if error.
-int read_file_char(FILE* from, wchar_t** buffer);
+int read_file(FILE* from, wchar_t** buffer);
 
 int write_chunk_to_file(FILE* dest, wchar_t* buffer);
 
@@ -24,5 +24,5 @@ typedef enum {
     CHAR,
     WIDE,
 } CHAR_TYPE;
-int from_file(FILE* source, FILE* dest, bpe_func func, CHAR_TYPE from);
+int from_file(FILE* source, FILE* dest, bpe_func func);
 #endif

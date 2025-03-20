@@ -27,7 +27,10 @@ int rep_table_from_string(const wchar_t* str, size_t str_size,
         return 0;
     }
     *table_size = str[0];
-    str += sizeof(wchar_t); // shift to avoid src[0] later
+#ifdef VISUAL_METADATA
+    *table_size -= '0';
+#endif
+    str += 1; // shift to avoid src[0] later
     *table = rep_table_new(*table_size);
     if(table == NULL) {
         printf("Unable to allocate memory for table.\n");
@@ -40,8 +43,8 @@ int rep_table_from_string(const wchar_t* str, size_t str_size,
     }
     for(size_t i = 0; i < *table_size; ++i) {
         (*table)[i].to = str[i * 3];
-        (*table)[i].second = str[i * 3 + 1];
-        (*table)[i].first = str[i * 3 + 2];
+        (*table)[i].first = str[i * 3 + 1];
+        (*table)[i].second = str[i * 3 + 2];
     }
     return 0;
 }

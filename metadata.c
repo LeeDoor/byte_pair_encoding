@@ -23,10 +23,10 @@ int metadata_to_string(const metadata_t* metadata,
 int metadata_from_string(const wchar_t* str, size_t str_size, metadata_t* metadata) {
     metadata->initial_size = str[0];
 #ifdef VISUAL_METADATA
-    metadata->initial_size -= 'a';        
+    metadata->initial_size -= 'a';
 #endif
-    str += sizeof(wchar_t);
-    return rep_table_from_string(str, str_size, 
+    return rep_table_from_string(str + 1, str_size - 1, 
                                  &metadata->replacement_table, 
                                  &metadata->table_size);
 }
+
