@@ -87,7 +87,16 @@ cli_parameters_t resolve_cli_parameters(int argc, char** argv) {
                 cli.source = DEFAULT_ENCODED;
         }
         else {
-            PARAM_ERROR(-100, "Undefined CLI parameter.\n", cli);
+            if(!overrided_src) {
+                cli.source = argv[i];
+                overrided_src = true;
+            }
+            else if (!overrided_dest) {
+                cli.destination = argv[i];
+                overrided_dest = true;
+            } else {
+                PARAM_ERROR(-100, "Undefined CLI parameter.\n", cli);
+            }
         }
     }
     return cli;
