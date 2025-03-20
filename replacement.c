@@ -3,12 +3,15 @@
 #include "replacement.h"
 
 replacement_t* rep_table_new(size_t size) {
-    return (replacement_t*) malloc(sizeof(replacement_t) * size);
+    return (replacement_t*) calloc(size, sizeof(replacement_t));
 }
 int rep_table_to_string(wchar_t* dest,
                         const replacement_t* table,
                         size_t table_size) {
     dest[0] = table_size;
+#ifdef VISUAL_METADATA
+    dest[0] += '0';
+#endif
     for(size_t i = 0; i < table_size; ++i){
         size_t rev_id = table_size - i - 1;
         dest[i * 3 + 1] = table[rev_id].to;

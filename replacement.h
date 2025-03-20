@@ -2,6 +2,7 @@
 #define REPLACEMENT_T
 
 #include <wchar.h>
+#define VISUAL_METADATA
 
 typedef struct {
     wchar_t first;

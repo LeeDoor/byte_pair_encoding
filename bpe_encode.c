@@ -40,7 +40,7 @@ size_t most_frequent_pair(const wchar_t* str, size_t str_size, replacement_t* re
 // pair - pair to replace
 // replace_to - character to replace on
 // returns size of copied buffer
-size_t copy_with_replacement(const wchar_t* from_buffer, 
+size_t encode_copy_with_replacement(const wchar_t* from_buffer, 
                                size_t from_buffer_size, 
                                wchar_t* to_buffer, 
                                replacement_t rep) {
@@ -79,12 +79,8 @@ wchar_t* form_the_result_string(const wchar_t* from_buffer,
     return result;
 } 
 
-#define SWAP_BUFFERS(a, b) \
-wchar_t* swap = a; \
-a = b; \
-b = swap
 int encode_one_pair(wchar_t** from_buffer, size_t* buffer_size,
-                    wchar_t* to_buffer,
+                    wchar_t** to_buffer,
                     size_t iteration, replacement_t* cur_rep) {
     size_t freq = 0;
     freq = most_frequent_pair(*from_buffer, *buffer_size, cur_rep);
@@ -93,11 +89,11 @@ int encode_one_pair(wchar_t** from_buffer, size_t* buffer_size,
     printf("%zu`th iteration. replacing pair %lc%lc to %lc with frequency %zu\n",
            iteration + 1, cur_rep->first, cur_rep->second, cur_rep->to, freq);
 #endif
-    *buffer_size = copy_with_replacement(*from_buffer, *buffer_size, 
-                                        to_buffer, 
+    *buffer_size = encode_copy_with_replacement(*from_buffer, *buffer_size, 
+                                        *to_buffer, 
                                         *cur_rep);
-    to_buffer[*buffer_size] = '\0';
-    SWAP_BUFFERS(*from_buffer, to_buffer);
+    (*to_buffer)[*buffer_size] = '\0';
+    SWAP_BUFFERS(*from_buffer, *to_buffer);
     return 0;
 }
 
@@ -114,9 +110,10 @@ int bpe_encode(wchar_t** from_buffer, size_t buffer_size) {
     replacement_t cur_rep;
     cur_rep.to = 256;
     for(;;++iteration, ++cur_rep.to) {
-        if(encode_one_pair(from_buffer, &buffer_size, to_buffer, iteration, &cur_rep))
+        if(encode_one_pair(from_buffer, &buffer_size, &to_buffer, iteration, &cur_rep))
             break;
         metadata->replacement_table[iteration] = cur_rep;
+        ++metadata->table_size;
     }
     wchar_t* short_buffer = form_the_result_string(*from_buffer, buffer_size,
                                                    metadata);
