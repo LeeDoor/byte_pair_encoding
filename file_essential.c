@@ -7,29 +7,36 @@ size_t get_file_size(FILE* file) {
     fseek(file, 0, SEEK_SET);
     return result;
 }
+#define READ_FILE_END(code) \
+    free(read_buffer); \
+    return code
 int read_file(FILE* from, wchar_t** buffer){
     size_t source_size = get_file_size(from);
     verbose("loaded %zd bytes.\n", source_size);
     char* read_buffer = (char*)malloc(sizeof(char)*source_size);
+    if(read_buffer == NULL) {
+        printf("Buy RAM lol\n");
+        return -1488;
+    }
     size_t res = fread(read_buffer, sizeof(char), source_size, from);
     if(res < source_size) {
         printf("Failed to read string.\n");
-        return -2;
+        READ_FILE_END(-1);
     }
     size_t buffer_size = source_size + 1; // + \0
     *buffer = (wchar_t*)malloc(sizeof(wchar_t) * buffer_size);
     if(*buffer == NULL) {
         printf("Error when allocating memory.\n");
-        return -1;
+        READ_FILE_END(-2);
     }
     res = mbstowcs(*buffer, read_buffer, source_size);
     if(res == 0) {
         printf("Error when copying to wide string.\n");
-        return -3;
+        READ_FILE_END(-3);
     }
     buffer_size = res + 1;
     (*buffer)[buffer_size - 1] = '\0';
-    return source_size; 
+    READ_FILE_END(source_size);
 }
 
 int write_to_file(FILE* dest, wchar_t* buffer) {

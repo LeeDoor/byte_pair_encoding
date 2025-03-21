@@ -95,6 +95,11 @@ int encode_one_pair(wchar_t** from_buffer, size_t* buffer_size,
     return 0;
 }
 
+#define BPE_ENCODE_END(code) \
+    free(to_buffer); \
+    free(metadata->replacement_table); \
+    free(metadata); \
+    return code
 int bpe_encode(wchar_t** from_buffer, size_t buffer_size) {
     wchar_t* to_buffer = malloc(sizeof(wchar_t) * buffer_size);
     metadata_t* metadata = metadata_new(buffer_size);
@@ -117,14 +122,10 @@ int bpe_encode(wchar_t** from_buffer, size_t buffer_size) {
                                                    metadata);
     if(short_buffer == NULL) {
         printf("Failed to allocate buffer.\n");
-        free(to_buffer);
-        free(metadata);
-        return -2;
+        BPE_ENCODE_END(-2);
     }
     free(*from_buffer);
     *from_buffer = short_buffer;
-    free(to_buffer);
-    free(metadata);
-    return buffer_size;
+    BPE_ENCODE_END(buffer_size);
 }
 
