@@ -6,6 +6,7 @@ struct hash_map_t;
 
 struct hash_map_t* hash_map_new();
 void hash_map_ctor(struct hash_map_t* hm);
+void hash_map_dtor(struct hash_map_t* hm);
 
 size_t hash_map_get_size(struct hash_map_t*);
 size_t hash_map_get_cap(struct hash_map_t*);

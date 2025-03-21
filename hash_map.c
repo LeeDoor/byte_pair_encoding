@@ -26,13 +26,17 @@ hash_map_t* hash_map_new() {
 void buckets_ctor(bucket_t** buckets, size_t size) {
     *buckets = (bucket_t*)malloc(sizeof(bucket_t) * size);
     for(size_t i = 0; i < size; ++i) {
-        (*buckets)[i] = (hkey_value_t*) malloc(sizeof(hkey_value_t) * MAX_BUCKET_OVERFLOW);
+        (*buckets)[i] = 
+            (hkey_value_t*) malloc(sizeof(hkey_value_t) * MAX_BUCKET_OVERFLOW);
     }
 }
 void hash_map_ctor(hash_map_t* hm) {
     hm->size = 0;
     hm->capacity = DEFAULT_CAPACITY;
     buckets_ctor(&hm->buckets, DEFAULT_CAPACITY);
+}
+void buckets_dtor(bucket_t* buckets) {
+    
 }
 void hash_map_dtor(hash_map_t* hm) {
     for(size_t i = 0; i < hm->capacity; ++i) {
@@ -72,7 +76,8 @@ int hash_map_resize(hash_map_t* hm, size_t new_size) {
         return 0;
     }
     bucket_t* buckcp;
-    buckets_ctor(&buckcp, new_size * 2);
+    hm->capacity = new_size * 2;
+    buckets_ctor(&buckcp, hm->capacity);
     if(buckcp == NULL) {
         return -1;
     }
