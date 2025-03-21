@@ -85,10 +85,8 @@ int encode_one_pair(wchar_t** from_buffer, size_t* buffer_size,
     size_t freq = 0;
     freq = most_frequent_pair(*from_buffer, *buffer_size, cur_rep);
     if(freq <= 2) return 1;
-#ifdef VERBOSE
-    printf("%zu`th iteration. replacing pair %lc%lc to %lc with frequency %zu\n",
+    verbose("%zu`th iteration. replacing pair %lc%lc to %lc with frequency %zu\n",
            iteration + 1, cur_rep->first, cur_rep->second, cur_rep->to, freq);
-#endif
     *buffer_size = encode_copy_with_replacement(*from_buffer, *buffer_size, 
                                         *to_buffer, 
                                         *cur_rep);

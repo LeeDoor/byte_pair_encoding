@@ -2,6 +2,7 @@
 #include "generate_example.h"
 #include "bpe.h"
 #include "file_essential.h"
+#include "verbose.h"
 #include <locale.h>
 #include <time.h>
 #include <stdlib.h>
@@ -25,11 +26,11 @@ int main(int argc, char** argv) {
     }
     switch(cli.action) {
         case ENCODE:
-            printf("Encoding.\n");
+            verbose("Encoding.\n");
             res = from_file(source, destination, bpe_encode);
         break;
         case DECODE:
-            printf("Decoding.\n");
+            verbose("Decoding.\n");
             res = from_file(source, destination, bpe_decode);
         break;
         case NONE:

@@ -1,4 +1,5 @@
 #include "cli_parameters.h"
+#include "verbose.h"
 #include <string.h>
 #include <stdio.h>
 
@@ -33,6 +34,9 @@ cli_parameters_t resolve_cli_parameters(int argc, char** argv) {
                    "--dest\t\t\t defines destination drectory. Next word shoulb be the directory to the destination file"
                    "(where to store result of compression)\n");
             exit(0);
+        }
+        else if (strcmp(argv[i], "-v") == 0 || strcmp(argv[i], "--verbose") == 0) {
+            set_verbose();
         }
         else if (strcmp(argv[i], "--gen-tests") == 0 || strcmp(argv[i], "-g") == 0) {
             if(cli.action == DECODE) {

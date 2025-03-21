@@ -9,10 +9,7 @@ size_t get_file_size(FILE* file) {
 }
 int read_file(FILE* from, wchar_t** buffer){
     size_t source_size = get_file_size(from);
-#ifdef VERBOSE
-    printf("loaded %zd bytes.\n", source_size);
-#endif
-
+    verbose("loaded %zd bytes.\n", source_size);
     char* read_buffer = (char*)malloc(sizeof(char)*source_size);
     size_t res = fread(read_buffer, sizeof(char), source_size, from);
     if(res < source_size) {
@@ -48,9 +45,7 @@ int from_file(FILE* source, FILE* dest, bpe_func func) {
     int res = read_file(source, &buffer);
     if(res < 0) return -1;
     size_t buffer_size = res;
-#ifdef VERBOSE
-    printf("Initial line:\n%ls\n", buffer);
-#endif
+    verbose("Initial line:\n%ls\n", buffer);
     res = func(&buffer, buffer_size);
     if(res < 0) {
         printf("Failed while en(de)coding the file.\n");
@@ -62,8 +57,6 @@ int from_file(FILE* source, FILE* dest, bpe_func func) {
         printf("Failed while writing string: %ls.\n", buffer);
         BPE_END(-3);
     }
-#ifdef VERBOSE
-    printf("Result line:\n%ls\n", buffer);
-#endif
+    verbose("Result line:\n%ls\n", buffer);
     BPE_END(0);
 }
