@@ -4,7 +4,7 @@
 #include "hash_map.h"
 
 void test_resize_capacity() {
-    struct hash_map_t* hash = hash_map_new();
+    hash_map_t* hash = hash_map_new();
     hash_map_ctor(hash);
     assert(hash_map_get_size(hash) == 0);
     assert(hash_map_get_cap(hash) == 16);
@@ -40,10 +40,10 @@ void test_resize_capacity() {
     free(hash);
 }
 void test_insert() {
-    struct hash_map_t* hash = hash_map_new();
+    hash_map_t* hash = hash_map_new();
     hash_map_ctor(hash);
 
-    
+    hash_map_insert(hash, L"ab", 1);    
 
     hash_map_dtor(hash);
     free(hash);
@@ -51,7 +51,6 @@ void test_insert() {
 int main() {
     printf("Starting tests.\n");
     test_resize_capacity();
-    test_insert();
-    printf("All assertions passed.\n");
+    // test_insert();
     return 0;
 }

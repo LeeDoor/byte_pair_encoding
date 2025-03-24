@@ -1,2 +1,2 @@
 make tests
-valgrind --leak-check=full ./test
+valgrind --track-origins=yes --leak-check=full ./test
