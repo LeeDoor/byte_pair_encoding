@@ -2,8 +2,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "hash_map.h"
-
+#define KYEL  "\x1B[33m"
+#define KGRN  "\x1B[32m"
+#define KRED  "\x1B[31m"
 void test_resize_capacity() {
+    printf("%sTesting rezising and changing capacity..", KYEL);
     hash_map_t* hash = hash_map_new();
     hash_map_ctor(hash);
     assert(hash_map_get_size(hash) == 0);
@@ -38,8 +41,10 @@ void test_resize_capacity() {
     assert(hash_map_get_size(hash) == 4);
     hash_map_dtor(hash);
     free(hash);
+    printf(".passed!\n");
 }
 void test_insert() {
+    printf("%sTesting inserting..", KYEL);
     hash_map_t* hash = hash_map_new();
     hash_map_ctor(hash);
 
@@ -47,10 +52,12 @@ void test_insert() {
 
     hash_map_dtor(hash);
     free(hash);
+    printf(".passed!\n");
 }
 int main() {
-    printf("Starting tests.\n");
+    printf("%sStarting tests.\n", KYEL);
     test_resize_capacity();
-    // test_insert();
+    test_insert();
+    printf("%sAll tests passed!\n", KGRN);
     return 0;
 }
