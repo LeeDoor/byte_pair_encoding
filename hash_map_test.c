@@ -49,6 +49,9 @@ void test_insert() {
     hash_map_ctor(hash);
 
     hash_map_insert(hash, L"ab", 1);    
+    assert(hash_map_get_cap(hash) >= 1);
+    assert(hash_map_get_size(hash) == 1);
+    assert(*hash_map_get(hash, L"ab") == 1);
 
     hash_map_dtor(hash);
     free(hash);

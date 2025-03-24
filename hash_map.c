@@ -111,4 +111,6 @@ void hash_map_insert(hash_map_t* hm, hkey_t k, hvalue_t v) {
     ++hm->size;
 }
 void hash_map_remove(hash_map_t* hm, hkey_t  k);
-int* hash_map_get(hash_map_t* hm, hkey_t k);
+int* hash_map_get(hash_map_t* hm, hkey_t k) {
+    return &hm->buckets[hash_wchar_pair(k)][0].val;
+}
